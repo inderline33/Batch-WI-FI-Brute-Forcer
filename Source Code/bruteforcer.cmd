@@ -52,28 +52,24 @@ goto :eof
     set interface_temp_index=-1
     set interface_number=0
 
-    for /f "tokens=1-4" %%a in ('netsh wlan show interfaces ^| findstr /L "Name Description Physical"') do (
-        if "%%a"=="Name" (
-            set /a interface_temp_index=!interface_temp_index!+1
-            if "%%d"=="" (
-                set interface[!interface_temp_index!]_id=%%c
-            ) else (
-                set interface[!interface_temp_index!]_id=%%c %%d
-            )
-        )
-        if %%a==Description (
-            set interface[!interface_temp_index!]_description=%%c %%d
-        )
-        if %%a==Physical (
-            set interface[!interface_temp_index!]_mac=%%d
-        )	
-
-
+    for /f "tokens=1,*" %%a in ('netsh wlan show interfaces') do (
+    :: Controlla la presenza di linee che indicano un nome, una descrizione e un indirizzo fisico
+    if "%%a"=="Nome" (
+        set /a interface_temp_index+=1
+        set interface[!interface_temp_index!]_id=%%b
     )
+    if "%%a"=="Description" (
+        set interface[!interface_temp_index!]_description=%%b
+    )
+    if "%%a"=="Physical" (
+        set interface[!interface_temp_index!]_mac=%%b
+    )
+)
 
-    set /a interface_number=!interface_temp_index!+1
-    timeout /t 2 >nul
-    cls
+:: Conta il numero di interfacce trovate
+set /a interface_number=!interface_temp_index!+1
+timeout /t 2 >nul
+cls
 goto :eof
 
 
